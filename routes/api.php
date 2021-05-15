@@ -13,6 +13,27 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::namespace('Api')->group(function () {
+
+	Route::post('login', 'LoginController@index');
+	Route::post('logout', 'LoginController@logout');
+	Route::post('admin/uploads', 'AdminUploadsController@index')->middleware('api_auth');
+
+	Route::post('admin/options', 'AdminOptionsController@index')->middleware('api_auth');
+	Route::post('admin/options/update', 'AdminOptionsController@update')->middleware('api_auth');
+	Route::post('admin/options/{id}', 'AdminOptionsController@show')->middleware('api_auth');
+
+	Route::post('admin/settings', 'AdminSettingsController@index')->middleware('api_auth');
+	Route::post('admin/settings/update', 'AdminSettingsController@update')->middleware('api_auth');
+	Route::post('admin/settings/{id}', 'AdminSettingsController@show')->middleware('api_auth');
+
+	Route::post('admin/pages', 'AdminPageController@index')->middleware('api_auth');
+	Route::post('admin/pages/update', 'AdminPageController@update')->middleware('api_auth');
+	Route::post('admin/pages/{id}', 'AdminPageController@show')->middleware('api_auth');
+
+	Route::post('admin/category', 'AdminCategoryController@index')->middleware('api_auth');
+	Route::post('admin/category/update', 'AdminCategoryController@update')->middleware('api_auth');
+	Route::post('admin/category/{id}', 'AdminCategoryController@show')->middleware('api_auth');
+
 });
+
