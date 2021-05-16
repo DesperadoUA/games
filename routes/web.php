@@ -16,3 +16,4 @@ Route::get('/', function () {
 });
 
 Route::get('/category-migrate', 'MigrateController@CategoryMigrate');
+Route::get('/emulators-migrate', 'MigrateController@EmulatorsMigrate');

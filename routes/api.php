@@ -35,5 +35,13 @@ Route::namespace('Api')->group(function () {
 	Route::post('admin/category/update', 'AdminCategoryController@update')->middleware('api_auth');
 	Route::post('admin/category/{id}', 'AdminCategoryController@show')->middleware('api_auth');
 
+	//------ Post types ------//
+
+	Route::post('admin/emulators', 'AdminEmulatorsController@index')->middleware('api_auth');
+	Route::post('admin/emulators/update', 'AdminEmulatorsController@update')->middleware('api_auth');
+	Route::post('admin/emulators/delete', 'AdminEmulatorsController@delete')->middleware('api_auth');
+	Route::post('admin/emulators/store', 'AdminEmulatorsController@store')->middleware('api_auth');
+	Route::post('admin/emulators/{id}', 'AdminEmulatorsController@show')->middleware('api_auth');
+
 });
 

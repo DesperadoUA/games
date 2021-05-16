@@ -9,6 +9,7 @@ use App\Validate;
 
 class AdminSettingsController extends Controller
 {
+	const LANG = 1;
     public function index(Request $request) {
         $response = [
             'body' => [],
@@ -16,7 +17,7 @@ class AdminSettingsController extends Controller
         ];
         $posts = new Settings();
         $settings = [
-            'lang'      => $request->has('lang') ? $request->input('lang') : self::LANG
+            'lang' => $request->has('lang') ? $request->input('lang') : self::LANG
         ];
         $arrPosts = $posts->getPosts($settings);
         if(!$arrPosts->isEmpty()) {
