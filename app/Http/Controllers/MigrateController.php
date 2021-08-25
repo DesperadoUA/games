@@ -2,10 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use DB;
 
 class MigrateController extends Controller
@@ -57,11 +53,60 @@ class MigrateController extends Controller
 			];
 			$category[] = [
 				'post_id'     => $item->id,
-				'category_id' => $item->category_id
+				'relative_id' => $item->category_id
 			];
 		}
 		//DB::table('posts')->insert($new_data);
 		//DB::table('emulator_meta')->insert($meta_data);
-		//DB::table('category_posts')->insert($category);
+		//DB::table('post_category')->insert($category);
+	}
+	public function RomesMigrate(){
+		set_time_limit(0);
+		$data = DB::table('romes')->get();
+		foreach ($data as $item) {
+			$meta = json_decode($item->extras, true);
+			$new_data = [
+				'permalink'   => $item->slug,
+				'post_type'   => 'rome',
+				'slug'        => 'rome',
+				'title'       => empty($item->title) ? '': $item->title,
+				'thumbnail'   => empty($item->image) ? '': $item->image,
+				'short_desc'  => empty($item->short_description) ? '': $item->short_description,
+				'h1'          => empty($item->title) ? '': $item->title,
+				'meta_title'  => empty($meta['meta_title']) ? '': $meta['meta_title'],
+				'description' => empty($meta['meta_description']) ? '': substr($meta['meta_description'], 250),
+				'keywords'    => empty($meta['meta_keywords']) ? '': $meta['meta_keywords'],
+				'content'     => empty($item->content) ? '': $item->content,
+			];
+
+			/*$insert_id = DB::table('posts')->insertGetId($new_data);
+
+			$meta_data = [
+				'post_id' => $insert_id,
+				'file_id' => $item->file_id,
+				'icon'    => $item->icon,
+				'genre'   => empty($item->genre) ? '': $item->genre
+			];
+
+			DB::table('rome_meta')->insert($meta_data);
+			$category = [
+				'post_id'     => $insert_id,
+				'relative_id' => $item->category_id
+			];
+			DB::table('post_category')->insert($category);
+*/
+		}
+	}
+	public function SetRating(){
+		/*$posts = DB::table('posts')->where('post_type', 'rome')->get();
+		foreach ($posts as $item) {
+			$data = [
+				'rating' => random_int(1, 100)
+			];
+			DB::table('rome_meta')
+				->where('post_id', $item->id)
+				->update($data);
+		}
+		*/
 	}
 }

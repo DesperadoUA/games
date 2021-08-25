@@ -17,6 +17,7 @@ class EmulatorMeta extends Migration
             $table->bigInteger('post_id')->unsigned();
             $table->string('icon');
 			$table->integer('file_id');
+			$table->integer('rating');
             $table->foreign('post_id')
                 ->references('id')
                 ->on('posts')

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Validate;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Models\Posts;
-use App\Models\Reviews;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
+use App\Models\Relative;
+use App\Models\Posts;
+use App\Models\Category;
+
 
 class AdminPostsController extends Controller
 {
@@ -26,6 +29,8 @@ class AdminPostsController extends Controller
     ];
     const DEFAULT_POST_TYPE = 'emulator';
     const SLUG              = 'emulator';
+	const CATEGORY_RELATIVE_TABLE  = 'post_category';
+	const CATEGORY_TABLE           = 'category';
 
     public function delete(Request $request) {
         $response = [
@@ -297,4 +302,50 @@ class AdminPostsController extends Controller
         $newData['permalink'] = $data->permalink;
         return $newData;
     }
+	protected static function relativeCategory($id) {
+		$data = [];
+		$current_post = Posts::where('id', $id)->get();
+		if($current_post->isEmpty()) {
+			return $data;
+		}
+		else {
+			$arr_title_category = [];
+			$category = new Category();
+			$list_category = $category->getAllPostsByLang($current_post[0]->lang);
+			if(!$list_category->isEmpty()) {
+				foreach ($list_category as $item) $arr_title_category[] = $item->title;
+			}
+			$data['all_value'] = $arr_title_category;
+			$arr_relative_category_id = Relative::getRelativeByPostId(self::CATEGORY_RELATIVE_TABLE, $current_post[0]->id);
+			if(empty($arr_relative_category_id)) $data['current_value'] = [];
+			else {
+				$arr_category = DB::table(self::CATEGORY_TABLE)
+					->whereIn('id', $arr_relative_category_id)
+					->get();
+				$data['current_value'] = [];
+				foreach ($arr_category as $item) $data['current_value'][] = $item->title;
+			}
+			return $data;
+		}
+	}
+	public function updateCategory($id, $arr_titles) {
+		DB::table(self::CATEGORY_RELATIVE_TABLE)->where('post_id', $id)->delete();
+		if(!empty($arr_titles)) {
+			$current_post = Posts::where('id', $id)
+				->get();
+			if(!$current_post->isEmpty()) {
+				$arr_category = DB::table(self::CATEGORY_TABLE)
+					->whereIn('title', $arr_titles)
+					->get();
+				$data = [];
+				foreach ($arr_category as $item) {
+					$data[] = [
+						'post_id' => $current_post[0]->id,
+						'relative_id' => $item->id
+					];
+				}
+				Relative::insert(self::CATEGORY_RELATIVE_TABLE, $data);
+			}
+		}
+	}
 }

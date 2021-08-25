@@ -3,6 +3,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Models\Relative;
+use App\Models\Category;
 
 class Posts extends Model
 {
@@ -21,7 +23,7 @@ class Posts extends Model
     const ORDER_BY  = 'DESC';
     const ORDER_KEY = 'create_at';
     const LANG      = 1;
-    const CATEGORY_RELATIVE_DB = 'category_posts';
+    const CATEGORY_RELATIVE_DB = 'post_category';
     /*
      * $settings = [
      *      'offset' => 8,
@@ -41,6 +43,8 @@ class Posts extends Model
         $t1 = self::TABLE;
         $t2 = $this->table_meta;
 
+        $data = [];
+
         $posts = DB::table($t1)
             ->where($t1.'.status',  'public')
             ->where($t1.'.post_type', $this->post_type)
@@ -51,7 +55,23 @@ class Posts extends Model
             ->limit($limit)
             ->orderBy($order_key, $order_by)
             ->get();
-        return $posts;
+
+        if(!$posts->isEmpty()) {
+        	foreach($posts as $item) {
+        		$category_id = Relative::getRelativeByPostId(self::CATEGORY_RELATIVE_DB, $item->id);
+				if(empty($category_id)){
+					$data[] = array_merge(get_object_vars($item), ['category' => []]);
+				}
+				else {
+					$category = new Category();
+					$cat_data = $category->getPublicPostById($category_id);
+					$data[] = array_merge(get_object_vars($item),
+						['category' => $cat_data->isEmpty() ? [] : $cat_data[0]]
+					);
+				}
+			}
+		}
+        return $data;
     }
     public function getPublicPostByUrl($url) {
         $t1 = self::TABLE;
@@ -156,4 +176,32 @@ class Posts extends Model
 			->where('post_id', $id)
 			->delete();
     }
+	public static function searchByTitle($lang, $post_type, $str) {
+		$posts = [];
+		if(!empty($str)) {
+			$posts = DB::table(self::TABLE)
+				->where('post_type',  $post_type)
+				->where('lang', $lang)
+				->where('title', 'like', '%'.$str.'%')
+				->get();
+		}
+		return $posts;
+	}
+	public function getPublicPostsByArrId($arr) {
+		$order_by  = self::ORDER_BY;
+		$order_key = self::ORDER_KEY;
+
+		$t1 = self::TABLE;
+		$t2 = $this->table_meta;
+
+		if(empty($arr)) return [];
+		$posts = DB::table($t1)
+			->where($t1.'.status',  'public')
+			->whereIn($t1.'.id', $arr)
+			->join($t2, $t1.'.id', '=', $t2.'.post_id')
+			->select( $t1.'.*', $t2.'.*')
+			->orderBy($order_key, $order_by)
+			->get();
+		return $posts;
+	}
 }

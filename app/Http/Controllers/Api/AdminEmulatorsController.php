@@ -59,6 +59,7 @@ class AdminEmulatorsController extends AdminPostsController
         $data = $post->getPostById($id);
         if(!empty(count($data))) {
             $response['body'] = self::dataCommonDecode($data[0]) + self::dataMetaDecode($data[0]);
+			$response['body']['category'] = self::relativeCategory($id);
             $response['confirm'] = 'ok';
         }
         return response()->json($response);
@@ -75,6 +76,7 @@ class AdminEmulatorsController extends AdminPostsController
 
         $data_meta = self::dataValidateMetaSave($data_request);
         $post->updateMetaById($data_request['id'], $data_meta);
+		self::updateCategory($data_request['id'], $data_request['category']);
         return response()->json($response);
     }
     protected static function dataValidateMetaSave($data){
@@ -93,12 +95,20 @@ class AdminEmulatorsController extends AdminPostsController
             $newData['file_id'] = 0;
         }
 
+		if(isset($data['rating'])) {
+			$newData['rating'] = (int)$data['rating'];
+		}
+		else {
+			$newData['rating'] = 0;
+		}
+
         return $newData;
     }
     protected static function dataMetaDecode($data){
         $newData = [];
         $newData['icon'] = htmlspecialchars_decode($data->icon, ENT_NOQUOTES);
         $newData['file_id'] = (int)$data->file_id;
+		$newData['rating'] = (int)$data->rating;
         return $newData;
     }
 }
